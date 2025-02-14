@@ -20,7 +20,7 @@ source ../vcompetencia/bin/activate
 
 
 # 3. Change directory to your project directory (adjust the path)
-cd /home/usc/ec/rsm/fivesegmentor/competencia
+cd /home/usc/ec/rsm/otrosfives
 
 # --- Run the Training Script ---
 
