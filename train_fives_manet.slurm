@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -J FIVES_MANet        # Job name
-#SBATCH -o fives_MANet_output_%j.log   # Output file
-#SBATCH -e fives_MANet_error_%j.log    # Error file
+#SBATCH -J MANet        # Job name
+#SBATCH -o MANet_output_%j.log   # Output file
+#SBATCH -e MANet_error_%j.log    # Error file
 #SBATCH --gres=gpu:a100:1       # Request 1 A100 GPU
 #SBATCH -c 32                   # Request 32 CPU cores
 #SBATCH --mem=32G               # Request 32GB of RAM

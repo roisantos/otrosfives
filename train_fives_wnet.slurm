@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -J FIVES_WNet        # Job name
-#SBATCH -o fives_WNet_output_%j.log   # Output file
-#SBATCH -e fives_WNet_error_%j.log    # Error file
+#SBATCH -J WNet        # Job name
+#SBATCH -o WNet_output_%j.log   # Output file
+#SBATCH -e WNet_error_%j.log    # Error file
 #SBATCH --gres=gpu:a100:1       # Request 1 A100 GPU
 #SBATCH -c 32                   # Request 32 CPU cores
 #SBATCH --mem=32G               # Request 32GB of RAM

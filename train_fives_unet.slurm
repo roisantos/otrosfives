@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -J FIVES_UNet        # Job name
-#SBATCH -o fives_UNet_output_%j.log   # Output file
-#SBATCH -e fives_UNet_error_%j.log    # Error file
+#SBATCH -J UNet        # Job name
+#SBATCH -o UNet_output_%j.log   # Output file
+#SBATCH -e UNet_error_%j.log    # Error file
 #SBATCH --gres=gpu:a100:1       # Request 1 A100 GPU
 #SBATCH -c 32                   # Request 32 CPU cores
 #SBATCH --mem=32G               # Request 32GB of RAM
