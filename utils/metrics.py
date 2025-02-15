@@ -54,11 +54,19 @@ def get_metrics(predict, target, threshold=None, predict_b=None):
         target = target.cpu().detach().numpy().flatten()
     else:
         target = target.flatten()
+
+    # --- Fix: Check for single class in target ---
+    if np.unique(target).size == 1:
+        auc = 0.0  # Return a default value (e.g., 0)
+    else:
+        auc = roc_auc_score(target.astype(np.uint8), predict)
+    # --- End Fix ---
+        
     tp = (predict_b * target).sum()
     tn = ((1 - predict_b) * (1 - target)).sum()
     fp = ((1 - target) * predict_b).sum()
     fn = ((1 - predict_b) * target).sum()
-    auc = roc_auc_score(target.astype(np.uint8), predict)
+    #auc = roc_auc_score(target.astype(np.uint8), predict)
     # auc = 0.000
     # auc = roc_auc_score(target, predict)
     mcc = matthews_corrcoef(target.astype(int), predict_b.astype(int))
