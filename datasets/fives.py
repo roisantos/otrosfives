@@ -22,11 +22,11 @@ class FIVES(Dataset):
 
         # Use relative paths based on the project root and mode
         if mode == 'train':
-            self.images_path = sorted(glob(os.path.join(CFG['dataset']['path'], "train", "Original", "*")))
-            self.masks_path = sorted(glob(os.path.join(CFG['dataset']['path'], "train", "Ground truth", "*")))
+            self.images_path = sorted(glob(os.path.join(CFG['dataset']['path'], "train", "image", "*")))
+            self.masks_path = sorted(glob(os.path.join(CFG['dataset']['path'], "train", "label", "*")))
         elif mode == 'test':
-            self.images_path = sorted(glob(os.path.join(CFG['dataset']['path'], "test", "Original", "*")))
-            self.masks_path = sorted(glob(os.path.join(CFG['dataset']['path'], "test", "Ground truth", "*")))
+            self.images_path = sorted(glob(os.path.join(CFG['dataset']['path'], "test", "image", "*")))
+            self.masks_path = sorted(glob(os.path.join(CFG['dataset']['path'], "test", "label", "*")))
         # No 'val' mode needed; splitting is done in fives_loader
 
         self.n_samples = len(self.images_path)
