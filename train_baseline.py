@@ -1,5 +1,6 @@
 import argparse
-from glob import glob 
+from glob import glob
+import os
 from bunch import Bunch
 from loguru import logger
 from ruamel.yaml import safe_load
@@ -16,16 +17,17 @@ from utils import losses
 from utils.helpers import get_instance, seed_torch
 
 
+
 def main(CFG):
     seed_torch()
     logger.info(f'RUNNING with the following configurations!!! \n \n {CFG} \n\n')
 
 
     if CFG['dataset']['type'] == 'FIVES':
-        images = sorted(glob(CFG['dataset']['path'] + f"/train/Original/*"))[:-1]
-        masks  = sorted(glob(CFG['dataset']['path'] +f"/train/Ground truth/*"))
+        # images = sorted(glob(CFG['dataset']['path'] + f"/train/Original/*"))[:-1] # No longer needed
+        # masks  = sorted(glob(CFG['dataset']['path'] +f"/train/Ground truth/*"))  # No longer needed
 
-        dataset = FIVES(CFG=CFG, images_path=images, mask_paths=masks, mode='train')
+        dataset = FIVES(CFG=CFG, mode='train') # Pass CFG and mode
         train_loader, val_loader = fives_loader(Dataset=dataset, CFG=CFG)
         
     elif CFG['dataset']['type'] == 'CHASEDB':
@@ -76,6 +78,7 @@ def main(CFG):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    # testing on a disease means, train, val on 3 other categories
     parser.add_argument("-cf", "--config", help="Configuration file to load", )
     args = parser.parse_args()
 

@@ -21,14 +21,14 @@ def main(CFG, disease):
 
     logger.info(f'RUNNING with the following configurations!!! \n \n {CFG} \n\n')
 
-    train_x, train_y, _, _  = load_subgroup_images(diag=disease, root=CFG['dataset']['path'])
-    dataset = FIVES(CFG=CFG, images_path=train_x, mask_paths=train_y)
+    train_x, train_y, _, _  = load_subgroup_images(disease=disease, root=CFG['dataset']['path'])
+    dataset = FIVES(CFG=CFG, mode='train') # Pass CFG and mode, remove image and mask paths.
     train_loader, val_loader = fives_loader(Dataset=dataset, CFG=CFG)
 
     model = get_instance(models, 'model', CFG)
     loss = get_instance(losses, 'loss', CFG)
 
-    logger.info(f'\n{model} with {loss}\n')
+    logger.info(f'\\n{model} with {loss}\\n')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     trainer = Trainer(
         model=model,
