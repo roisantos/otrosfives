@@ -32,7 +32,7 @@ def main(CFG, check_path):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-cf", "--config", default="config/fives_manet.yaml",help="Configuration file to load")
+    parser.add_argument("-cf", "--config", default="config/fives_unet.yaml",help="Configuration file to load")
     parser.add_argument("-le", "--weight_path", default="checkpoint-epoch5.pth", type=str,
                         help='the path of wetght.pt')
     # parser.add_argument("--show", help="save predict image",
