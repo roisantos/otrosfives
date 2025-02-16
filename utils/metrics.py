@@ -1,10 +1,89 @@
 import numpy as np
-import torch
 import cv2
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import matthews_corrcoef
- 
+import os
+from glob import glob
+from loguru import logger
 
+from torch.utils.data.sampler import SubsetRandomSampler
+from torch.utils.data import DataLoader
+
+
+# CLAHE
+def clahe_equalized(image):
+    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    clahe = cv2.createCLAHE(clipLimit=1.5,tileGridSize=(8,8))
+    lab[...,0] = clahe.apply(lab[...,0])
+    bgr = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    bgr = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+    return bgr
+
+def fives_loader(Dataset, CFG):
+
+    # Split dataset into train and validation
+    validation_split = .2  # Hardcoded split, as in the original
+    shuffle_dataset = True
+
+    # Creating data indices for training and validation splits:
+    dataset_size = len(Dataset)
+    indices = list(range(dataset_size))
+    split = int(np.floor(validation_split * dataset_size))
+
+    if shuffle_dataset:
+        np.random.seed(CFG['random_seed'])
+        np.random.shuffle(indices)
+
+    train_indices, val_indices = indices[split:], indices[:split]
+
+    train_sampler = SubsetRandomSampler(train_indices)
+    valid_sampler = SubsetRandomSampler(val_indices)
+
+    # Return DataLoader instances, not just samplers
+    train_loader = DataLoader(Dataset, batch_size=CFG['batch_size'], pin_memory=True,
+                              sampler=train_sampler, drop_last=True, num_workers=CFG['num_workers'])
+    val_loader = DataLoader(Dataset, batch_size=CFG['batch_size'], drop_last=True,
+                            sampler=valid_sampler, pin_memory=True, num_workers=CFG['num_workers'])
+
+    logger.info(
+        'The total number of images for train and validation is %d' % len(Dataset))
+
+    return train_loader, val_loader  # Return DataLoaders
+
+def fives_test_loader(Dataset):
+
+    loader = DataLoader(dataset=Dataset, batch_size=1,
+                        shuffle=False, pin_memory=True, num_workers=8)
+
+    return loader
+
+def load_subgroup_images(disease, root):
+    def load_paths(subdir):
+        # Use os.path.join for proper path construction
+        original = sorted(glob(os.path.join(root, subdir, 'Original/*')))
+        ground_truth = sorted(glob(os.path.join(root, subdir, 'Ground truth/*')))
+
+        # Exclude the database file from training images only
+        if 'train' in subdir:
+            original = original[:-1]
+
+        return original, ground_truth
+
+    train_x, train_y = load_paths('train')
+    valid_x, valid_y = load_paths('test')
+
+    # Split into training and validation sets based on the presence of 'disease' in the filename
+    def split_data(items):
+        return ([item for item in items if disease in os.path.basename(item)],
+                [item for item in items if disease not in os.path.basename(item)])
+
+    valid_x, train_x = split_data(train_x + valid_x)
+    valid_y, train_y = split_data(train_y + valid_y)
+
+    return train_x, train_y, valid_x, valid_y
+
+import torch
+from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, recall_score, precision_score, cohen_kappa_score, matthews_corrcoef
+import numpy as np
+import cv2
 
 # code: https://github.com/lseventeen/FR-UNet/blob/master/utils/metrics.py
 
@@ -45,6 +124,7 @@ class AverageMeter(object):
 
 
 def get_metrics(predict, target, threshold=None, predict_b=None):
+    epsilon = 1e-8  # Add a small epsilon value
     predict = torch.sigmoid(predict).cpu().detach().numpy().flatten()
     if predict_b is not None:
         predict_b = predict_b.flatten()
@@ -70,12 +150,12 @@ def get_metrics(predict, target, threshold=None, predict_b=None):
     # auc = 0.000
     # auc = roc_auc_score(target, predict)
     mcc = matthews_corrcoef(target.astype(int), predict_b.astype(int))
-    acc = (tp + tn) / (tp + fp + fn + tn)
-    pre = tp / (tp + fp)
-    sen = tp / (tp + fn)
-    spe = tn / (tn + fp)
-    iou = tp / (tp + fp + fn)
-    f1 = 2 * pre * sen / (pre + sen)
+    acc = (tp + tn + epsilon) / (tp + fp + fn + tn + epsilon)
+    pre = (tp + epsilon) / (tp + fp + epsilon)
+    sen = (tp + epsilon) / (tp + fn + epsilon)
+    spe = (tn + epsilon) / (tn + fp + epsilon)
+    iou = (tp + epsilon) / (tp + fp + fn + epsilon)
+    f1 = (2 * pre * sen + epsilon) / (pre + sen + epsilon)
     
     return {
         "AUC": np.round(auc, 4),

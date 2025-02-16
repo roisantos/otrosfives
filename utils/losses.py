@@ -78,11 +78,10 @@ class DiceBCELoss(nn.Module):
 
 
 class Soft_clDice(nn.Module):
-    def __init__(self, iter_=5, alpha=0.5, smooth=1.):
-        super(Soft_clDice, self).__init__()
+    def __init__(self, iter_=3, smooth=1.):
+        super(soft_cldice, self).__init__()
         self.iter = iter_
         self.smooth = smooth
-        self.alpha = alpha
 
     def forward(self, prediction, target):
 
