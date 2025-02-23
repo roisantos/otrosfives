@@ -5,8 +5,8 @@ from bunch import Bunch
 from ruamel.yaml import safe_load
 from torch.utils.data import DataLoader
 import networks as models
-from datasets.fives import FIVES
-from tester import Tester
+from datasets.fivestype import FIVES
+from testertype import Tester
 from utils import losses
 from utils.helpers import get_instance
 
