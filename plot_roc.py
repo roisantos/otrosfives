@@ -6,6 +6,7 @@ import torch
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 from tqdm import tqdm
+from typing import List
 
 # ============================================================================
 # Configuration section. Adjust the following paths/parameters as needed.
@@ -65,19 +66,23 @@ import networks as models  # local package – contains Unet definition
 
 # Instantiate model (we assume Unet was used – adapt if you use a different model)
 model = models.Unet().to(DEVICE)
+print("[1/5] Loading model checkpoint...", flush=True)
 checkpoint = torch.load(MODEL_CHECKPOINT, map_location=DEVICE)
 model.load_state_dict(checkpoint["state_dict"])
 model.eval()
+print("[2/5] Model loaded and set to eval mode.", flush=True)
+print("[3/5] Gathering file paths...", flush=True)
 
 # ----------------------------------------------------------------------------
 # Collect predictions and ground-truth labels
 # ----------------------------------------------------------------------------
 
 imgs, masks = load_paths(IMG_DIR, LABEL_DIR)
-print(f"Found {len(imgs)} samples for ROC evaluation")
+print(f"Found {len(imgs)} samples for ROC evaluation", flush=True)
+print("[4/5] Starting inference over test set...", flush=True)
 
-all_probs: list[np.ndarray] = []
-all_labels: list[np.ndarray] = []
+all_probs: List[np.ndarray] = []
+all_labels: List[np.ndarray] = []
 
 with torch.no_grad():
     for img_path, mask_path in tqdm(list(zip(imgs, masks)), desc="Inference", total=len(imgs)):
@@ -104,6 +109,7 @@ from sklearn.metrics import roc_curve, auc
 
 fpr, tpr, _ = roc_curve(all_labels_arr.astype(np.uint8), all_probs_arr)
 roc_auc = auc(fpr, tpr)
+print("[5/5] Inference complete. Computing ROC and generating plot...", flush=True)
 print(f"AUC = {roc_auc:.4f}")
 
 # ----------------------------------------------------------------------------
@@ -120,5 +126,7 @@ plt.title("Receiver Operating Characteristic – Test set")
 plt.legend(loc="lower right")
 plt.grid(True)
 plt.tight_layout()
+
+print("Saving ROC curve figure...", flush=True)
 plt.savefig(OUTPUT_FIGURE, dpi=300)
-print(f"Saved ROC curve to {OUTPUT_FIGURE}") 
+print(f"Saved ROC curve to {OUTPUT_FIGURE}", flush=True) 
